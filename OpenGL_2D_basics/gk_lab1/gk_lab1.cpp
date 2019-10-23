@@ -6,14 +6,17 @@
 
 #include "pch.h"
 
+#include <stdlib.h>
+
+#include <time.h>
+
 #include <windows.h>
 
-#include <gl/gl.h>
+#include <GL/gl.h>
 
-#include <gl/glut.h>
+#include <GL/glut.h>
 
-#include <stdlib.h>
-#include <time.h>
+
 
 /*************************************************************************************/
 
@@ -296,17 +299,20 @@ void ChangeSize(GLsizei horizontal, GLsizei vertical)
 
 
 
-void main(void)
+void main(int argc, char *argv[])
 
 {
+
+	glutInit(&argc, argv);
+
 	srand(time(0));
 
 	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGBA);
 	// Ustawienie trybu wyœwietlania
 	// GLUT_SINGLE - pojedynczy bufor wyœwietlania
 	// GLUT_RGBA - model kolorów RGB
-
-
+	
+	
 
 	glutCreateWindow("Drugi program w OpenGL");
 	// Utworzenie okna i okreœlenie treœci napisu w nag³ówku okna
