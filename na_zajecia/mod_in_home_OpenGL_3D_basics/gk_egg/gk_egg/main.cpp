@@ -201,7 +201,6 @@ void drawEggFromTriangleStrips() {
 			glColor3f(pur.color.r, pur.color.g, pur.color.b);
 			glVertex3f(pur.x, pur.y, pur.z);
 		}
-
 		pdr = points[i][nPoints - 1];
 		glColor3f(pdr.color.r, pdr.color.g, pdr.color.b);
 		glVertex3f(pdr.x, pdr.y, pdr.z);
@@ -338,7 +337,6 @@ void RenderScene(void)
 	//drawEggFromLines(); // OK
 	//drawEggFromTriangles(); // OK
 	drawEggFromTriangleStrips(); // OK
-
 
 	glFlush();
 	// Przekazanie poleceñ rysuj¹cych do wykonania
