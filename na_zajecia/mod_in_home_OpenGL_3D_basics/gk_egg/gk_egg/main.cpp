@@ -144,10 +144,11 @@ void drawEggFromLines() {
 	glEnd();
 }
 
+// OK
 void drawEggFromTriangles() {
 	glBegin(GL_TRIANGLES);
 	const int nPoints = points.size();
-	
+
 	Point pdl, pdr, pul, pur;
 	for (int i = 0; i < nPoints - 1; ++i) {
 		pdl = points[i][0];
@@ -178,35 +179,36 @@ void drawEggFromTriangles() {
 	glEnd();
 }
 
+// OK
 void drawEggFromTriangleStrips() {
-	glBegin(GL_TRIANGLE_STRIP);
 	const int nPoints = points.size();
-	/*for (int j = 0; j < nPoints; ++j) {
-		for (int i = 0; i < nPoints; ++i) {
-			glColor3f(points[i][j].color.r, points[i][j].color.g, points[i][j].color.b);
-			glVertex3f(points[i][j].x, points[i][j].y, points[i][j].z);
-		}
-	}*/
-	Point pdl, pdr, pur;
+	Point pul, pdl, pur, pdr;
+
 	for (int i = 0; i < nPoints - 1; ++i) {
-		pdl = points[i][0];
-		glColor3f(pdl.color.r, pdl.color.g, pdl.color.b);
-		glVertex3f(pdl.x, pdl.y, pdl.z);
+		glBegin(GL_TRIANGLE_STRIP);
+
+		pul = points[i + 1][0];
+		glColor3f(pul.color.r, pul.color.g, pul.color.b);
+		glVertex3f(pul.x, pul.y, pul.z);
+
 		for (int j = 0; j < nPoints - 1; ++j) {
+
+			pdl = points[i][j];
+			glColor3f(pdl.color.r, pdl.color.g, pdl.color.b);
+			glVertex3f(pdl.x, pdl.y, pdl.z);
 
 			pur = points[i + 1][j + 1];
 			glColor3f(pur.color.r, pur.color.g, pur.color.b);
 			glVertex3f(pur.x, pur.y, pur.z);
-
-			pdr = points[i][j + 1];
-			glColor3f(pdr.color.r, pdr.color.g, pdr.color.b);
-			glVertex3f(pdr.x, pdr.y, pdr.z);
 		}
-		pur = points[i][nPoints - 1];
-		glColor3f(pur.color.r, pur.color.g, pur.color.b);
-		glVertex3f(pur.x, pur.y, pur.z);
+
+		pdr = points[i][nPoints - 1];
+		glColor3f(pdr.color.r, pdr.color.g, pdr.color.b);
+		glVertex3f(pdr.x, pdr.y, pdr.z);
+
+		glEnd();
 	}
-	glEnd();
+
 }
 
 void Axes(void)
@@ -334,8 +336,8 @@ void RenderScene(void)
 	//printPot(); // OK
 	//drawEggFromPoints(); // OK
 	//drawEggFromLines(); // OK
-	drawEggFromTriangles();
-	//drawEggFromTriangleStrips();
+	//drawEggFromTriangles(); // OK
+	drawEggFromTriangleStrips(); // OK
 
 
 	glFlush();
@@ -362,7 +364,7 @@ void MyInit(void)
 
 	srand(time(nullptr));
 
-	createEggPointModel(20);
+	createEggPointModel(100);
 
 }
 
