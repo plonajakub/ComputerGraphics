@@ -71,6 +71,8 @@ static int viewMode = 1; // 1 - camera
 
 static float teapotColor[3] = { 1.0, 1.0, 0.0 };
 
+static GLdouble cameraDirectionFix = 1.0;
+
 /////////////////////////////////////////////////////////////////
 
 // [0, 1]
@@ -413,7 +415,7 @@ void RenderScene(void)
 	glLoadIdentity();
 	// Czyszczenie macierzy bie¿¹cej
 
-	GLdouble cameraDirectionFix = 1.0;
+	
 	if (viewMode == 1) {					// camera
 		if (status == 1)
 		{
@@ -454,11 +456,6 @@ void RenderScene(void)
 		{
 			cameraDirectionFix = 1.0;
 		}
-
-		designatePointOnSphere(viewer[0], viewer[1], viewer[2]);
-		viewer[0] += pointOfView[0];
-		viewer[1] += pointOfView[1];
-		viewer[2] += pointOfView[2];
 	}
 	else {							// transformations
 		if (status == 1)
@@ -474,13 +471,16 @@ void RenderScene(void)
 			}
 		}
 	}
-
+	designatePointOnSphere(viewer[0], viewer[1], viewer[2]);
+	viewer[0] += pointOfView[0];
+	viewer[1] += pointOfView[1];
+	viewer[2] += pointOfView[2];
 	gluLookAt(viewer[0], viewer[1], viewer[2],
 		pointOfView[0], pointOfView[1], pointOfView[2],
 		0.0, cameraDirectionFix, 0.0);
 
 	Axes();
-	
+
 	glRotatef(thetaTransform, 0.0, 1.0, 0.0);
 	glRotatef(phiTransform, 1.0, 0.0, 0.0);
 	glScalef(scale, scale, scale);
