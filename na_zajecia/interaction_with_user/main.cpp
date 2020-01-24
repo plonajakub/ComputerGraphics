@@ -64,7 +64,12 @@ static GLfloat verticalNorm;
 
 static float radius = 10;
 
-static bool handleVirtualCamera = true;
+static float pointOfView[3] = { 0.0, 0.0, 0.0 };
+
+static int viewMode = 1; // 1 - camera
+						 // 2 - transformation
+
+static float teapotColor[3] = { 1.0, 1.0, 0.0 };
 
 /////////////////////////////////////////////////////////////////
 
@@ -292,9 +297,8 @@ void Axes(void)
 }
 
 void printPot() {
-	glColor3f(1.0f, 1.0f, 1.0f); // Ustawienie koloru rysowania na bia³y
-	//glRotated(60.0, 1.0, 1.0, 1.0);  // Obrót o 60 stopni
-	glutWireTeapot(3.0); // Narysowanie obrazu czajnika do herbaty
+	glColor3f(teapotColor[0], teapotColor[1], teapotColor[2]);
+	glutWireTeapot(3.0);
 }
 
 //void spinEgg()
@@ -314,10 +318,46 @@ void printPot() {
 
 void keys(unsigned char key, int x, int y)
 {
-	if (key == 'c')
+	if (key == '1')
 	{
-		handleVirtualCamera = !handleVirtualCamera;
+		viewMode = 1; // camera
+		teapotColor[0] = 1;
+		teapotColor[1] = 1;
+		teapotColor[2] = 0;
 	}
+	else if (key == '2')
+	{
+		viewMode = 2; // transformation
+		teapotColor[0] = 0;
+		teapotColor[1] = 1;
+		teapotColor[2] = 1;
+	}
+
+	if (key == 'w')
+	{
+		pointOfView[1] += 1;
+	}
+	else if (key == 's')
+	{
+		pointOfView[1] -= 1;
+	}
+	else if (key == 'a')
+	{
+		pointOfView[0] -= 1;
+	}
+	else if (key == 'd')
+	{
+		pointOfView[0] += 1;
+	}
+	else if (key == 'q')
+	{
+		pointOfView[2] -= 1;
+	}
+	else if (key == 'e')
+	{
+		pointOfView[2] += 1;
+	}
+	glutPostRedisplay();
 }
 
 /*************************************************************************************/
@@ -373,12 +413,29 @@ void RenderScene(void)
 	glLoadIdentity();
 	// Czyszczenie macierzy bie¿¹cej
 
-
-	if (handleVirtualCamera) {
+	GLdouble cameraDirectionFix = 1.0;
+	if (viewMode == 1) {					// camera
 		if (status == 1)
 		{
 			thetaCamera += 2 * M_PI * horizontalNorm * delta_x;
+			if (thetaCamera > 2 * M_PI)
+			{
+				thetaCamera -= 2 * M_PI;
+			}
+			if (thetaCamera < 0)
+			{
+				thetaCamera += 2 * M_PI;
+			}
+
 			phiCamera += 2 * M_PI * verticalNorm * delta_y;
+			if (phiCamera > 2 * M_PI)
+			{
+				phiCamera -= 2 * M_PI;
+			}
+			if (phiCamera < 0)
+			{
+				phiCamera += 2 * M_PI;
+			}
 		}
 		if (status == 2)
 		{
@@ -388,26 +445,45 @@ void RenderScene(void)
 			}
 
 		}
-		designatePointOnSphere(viewer[0], viewer[1], viewer[2]);
-	}
-	else {
-		if (status == 1)                     // jeœli lewy klawisz myszy wciêniêty
+
+		if (phiCamera > 0.5 * M_PI && phiCamera < 1.5 * M_PI)
 		{
-			thetaTransform += delta_x * pix2angle_x;    // modyfikacja k¹ta obrotu o kat proporcjonalny
+			cameraDirectionFix = -1.0;
+		}
+		else
+		{
+			cameraDirectionFix = 1.0;
+		}
+
+		designatePointOnSphere(viewer[0], viewer[1], viewer[2]);
+		viewer[0] += pointOfView[0];
+		viewer[1] += pointOfView[1];
+		viewer[2] += pointOfView[2];
+	}
+	else {							// transformations
+		if (status == 1)
+		{
+			thetaTransform += delta_x * pix2angle_x;
 			phiTransform += delta_y * pix2angle_y;
-		}                                  // do ró¿nicy po³o¿eñ kursora myszy
+		}
 		if (status == 2)
 		{
-			scale += pix2Norm01 * -delta_y;
+			if ((delta_y > 0 && scale > 0.5) || (delta_y < 0 && scale < 3))
+			{
+				scale += pix2Norm01 * -delta_y;
+			}
 		}
 	}
-	gluLookAt(viewer[0], viewer[1], viewer[2], 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-	glRotatef(thetaTransform, 0.0, 1.0, 0.0);  //obrót obiektu o nowy k¹t
-	glRotatef(phiTransform, 1.0, 0.0, 0.0);
-	glScalef(scale, scale, scale);
-	
+
+	gluLookAt(viewer[0], viewer[1], viewer[2],
+		pointOfView[0], pointOfView[1], pointOfView[2],
+		0.0, cameraDirectionFix, 0.0);
 
 	Axes();
+	
+	glRotatef(thetaTransform, 0.0, 1.0, 0.0);
+	glRotatef(phiTransform, 1.0, 0.0, 0.0);
+	glScalef(scale, scale, scale);
 
 	// Render designed objects
 	printPot(); // OK
@@ -419,8 +495,6 @@ void RenderScene(void)
 	//drawEggFromTriangleStrips(); // OK
 
 	glFlush();
-	// Przekazanie poleceñ rysuj¹cych do wykonania
-
 	glutSwapBuffers();
 }
 
