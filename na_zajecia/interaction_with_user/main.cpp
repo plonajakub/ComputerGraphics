@@ -33,45 +33,37 @@ struct Point {
 static GLfloat theta_kb[] = { 0.0, 0.0, 0.0 };
 vector<vector<Point>> points;
 
-static GLfloat viewer[] = { 0.0, 0.0, 10.0 };
+static GLint status = 0;		// Stan myszy
+								// 0 - Brak aktywnoœci
+								// 1 - LPM
+								// 2 - PPM
+static int x_pos_old = 0;		// Poprzednie wspó³rzêdne
+static int y_pos_old = 0;		//
+static int delta_x = 0;			// Przyrost wartoœci osi X
+static int delta_y = 0;			// Przyrost wartoœci osi Y
 
-static GLfloat thetaCamera = 0.0;   // k¹t obrotu obiektu
-static GLfloat phiCamera = 0.0;
-static GLfloat thetaTransform = 0.0;   // k¹t obrotu obiektu
-static GLfloat phiTransform = 0.0;
+static GLfloat thetaTransform = 0.0;    // K¹t obrotu obiektu (oœ Y)
+static GLfloat phiTransform = 0.0;		// K¹t obrotu obiektu (oœ X)
+static GLfloat pix2angle_x;     // Skalowanie poziome (0 - 360)
+static GLfloat pix2angle_y;     // Skalowanie pionowe (0 - 360)
+static GLfloat scale = 1.0;		// Skala obiektu
+static GLfloat pix2Norm01;		// Skalowanie pionowe (0 - 1)
 
-static GLfloat pix2angle_x;     // przelicznik pikseli na stopnie
-static GLfloat pix2angle_y;     // przelicznik pikseli na stopnie
+static GLfloat viewer[] = { 0.0, 0.0, 10.0 };		// Po³o¿enie kamery
+static float pointOfView[3] = { 0.0, 0.0, 0.0 };	// Punkt, na który patrzy kamera
+static float radius = 10;			// Promieñ sfery kamery
+static GLfloat thetaCamera = 0.0;   // Azymut kamery
+static GLfloat phiCamera = 0.0;		// Elewacja kamery
+static GLdouble cameraDirectionFix = 1.0;		// Wspó³rzêdna Y wektora UP kamery
+static GLfloat horizontalNorm;		// Skalowanie poziome (0 - 1)
+static GLfloat verticalNorm;		// Skalowanie pionowe (0 - 1)
 
-static GLint status = 0;       // stan klawiszy myszy
-							   // 0 - nie naciœniêto ¿adnego klawisza
-							   // 1 - naciœniêty zostaæ lewy klawisz
-							   // 2 - PPM
+static int viewMode = 1; // Manipulacja
+						 // 1 - kamer¹
+						 // 2 - obiektem
 
-static int x_pos_old = 0;       // poprzednia pozycja kursora myszy
-static int y_pos_old = 0;
+static float teapotColor[3] = { 1.0, 1.0, 0.0 }; // Kolor imbryczka
 
-
-static int delta_x = 0;        // ró¿nica pomiêdzy pozycj¹ bie¿¹c¹
-									  // i poprzedni¹ kursora myszy
-static int delta_y = 0;
-
-static GLfloat scale = 1.0;
-static GLfloat pix2Norm01;
-
-static GLfloat horizontalNorm;
-static GLfloat verticalNorm;
-
-static float radius = 10;
-
-static float pointOfView[3] = { 0.0, 0.0, 0.0 };
-
-static int viewMode = 1; // 1 - camera
-						 // 2 - transformation
-
-static float teapotColor[3] = { 1.0, 1.0, 0.0 };
-
-static GLdouble cameraDirectionFix = 1.0;
 
 /////////////////////////////////////////////////////////////////
 
@@ -322,14 +314,14 @@ void keys(unsigned char key, int x, int y)
 {
 	if (key == '1')
 	{
-		viewMode = 1; // camera
+		viewMode = 1;
 		teapotColor[0] = 1;
 		teapotColor[1] = 1;
 		teapotColor[2] = 0;
 	}
 	else if (key == '2')
 	{
-		viewMode = 2; // transformation
+		viewMode = 2;
 		teapotColor[0] = 0;
 		teapotColor[1] = 1;
 		teapotColor[2] = 1;
@@ -403,20 +395,13 @@ void Motion(GLsizei x, GLsizei y)
 
 // Funkcja okreœlaj¹ca co ma byæ rysowane (zawsze wywo³ywana gdy trzeba
 // przerysowaæ scenê)
-void RenderScene(void)
+void RenderScene()
 {
-
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	// Czyszczenie okna aktualnym kolorem czyszcz¹cym
-
 	glMatrixMode(GL_MODELVIEW);
-	//glMatrixMode(GL_PROJECTION);
-
 	glLoadIdentity();
-	// Czyszczenie macierzy bie¿¹cej
 
-	
-	if (viewMode == 1) {					// camera
+	if (viewMode == 1) {		// kamera
 		if (status == 1)
 		{
 			thetaCamera += 2 * M_PI * horizontalNorm * delta_x;
@@ -457,7 +442,7 @@ void RenderScene(void)
 			cameraDirectionFix = 1.0;
 		}
 	}
-	else {							// transformations
+	else {		// obiekt
 		if (status == 1)
 		{
 			thetaTransform += delta_x * pix2angle_x;
@@ -485,14 +470,7 @@ void RenderScene(void)
 	glRotatef(phiTransform, 1.0, 0.0, 0.0);
 	glScalef(scale, scale, scale);
 
-	// Render designed objects
-	printPot(); // OK
-
-	//glTranslatef(0, -5.0, 0);
-	//drawEggFromPoints(); // OK
-	//drawEggFromLines(); // OK
-	//drawEggFromTriangles(); // OK
-	//drawEggFromTriangleStrips(); // OK
+	printPot();
 
 	glFlush();
 	glutSwapBuffers();
